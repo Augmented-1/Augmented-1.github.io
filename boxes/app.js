@@ -140,11 +140,14 @@ function el(tag, attrs = {}, ...children) {
     else if (v === true) node.setAttribute(k, '');
     else if (v !== false && v != null) node.setAttribute(k, v);
   }
-  for (const c of children) {
-    if (c == null || c === false) continue;
-    if (Array.isArray(c)) c.forEach(x => x && node.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
-    else node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-  }
+  const append = (parent, child) => {
+    if (child == null || child === false) return;
+    if (Array.isArray(child)) { child.forEach(x => append(parent, x)); return; }
+    if (child instanceof Node) { parent.appendChild(child); return; }
+    // Coerce numbers, booleans, anything else to a text node.
+    parent.appendChild(document.createTextNode(String(child)));
+  };
+  for (const c of children) append(node, c);
   return node;
 }
 
@@ -198,22 +201,34 @@ function nav(view, opts = {}) {
 // ============================================================
 function renderApp() {
   const app = document.getElementById('app');
-  app.innerHTML = '';
+  try {
+    app.innerHTML = '';
 
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('box')) {
-    const decoded = decodeBox(params.get('box'));
-    if (decoded) return app.appendChild(renderViewerMode(decoded));
-    app.appendChild(renderBrokenLink());
-    return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('box')) {
+      const decoded = decodeBox(params.get('box'));
+      if (decoded) return app.appendChild(renderViewerMode(decoded));
+      app.appendChild(renderBrokenLink());
+      return;
+    }
+
+    if (state.currentView === 'home') app.appendChild(renderHome());
+    else if (state.currentView === 'editor') app.appendChild(renderEditor(state.editingBox));
+    else if (state.currentView === 'detail') app.appendChild(renderDetail(state.viewingBox));
+    else if (state.currentView === 'qr') app.appendChild(renderQR(state.qrBox));
+    else if (state.currentView === 'scanner') app.appendChild(renderScanner());
+    else if (state.currentView === 'settings') app.appendChild(renderSettings());
+  } catch (err) {
+    console.error('Render error:', err);
+    app.innerHTML = '';
+    const wrap = el('div', { style: { padding: '20px', maxWidth: '600px', margin: '40px auto' } },
+      el('h2', { style: { fontSize: '18px', marginBottom: '12px', color: 'var(--danger, #a32d2d)' } }, 'Something went wrong'),
+      el('p', { class: 'muted', style: { marginBottom: '16px' } }, 'The app hit an error rendering this screen. Your data is safe.'),
+      el('pre', { style: { background: 'var(--surface-alt)', padding: '12px', borderRadius: '8px', fontSize: '12px', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginBottom: '16px' } }, String(err && err.stack || err)),
+      el('button', { class: 'btn primary block', onclick: () => { state.currentView = 'home'; renderApp(); } }, 'Back to home')
+    );
+    app.appendChild(wrap);
   }
-
-  if (state.currentView === 'home') app.appendChild(renderHome());
-  else if (state.currentView === 'editor') app.appendChild(renderEditor(state.editingBox));
-  else if (state.currentView === 'detail') app.appendChild(renderDetail(state.viewingBox));
-  else if (state.currentView === 'qr') app.appendChild(renderQR(state.qrBox));
-  else if (state.currentView === 'scanner') app.appendChild(renderScanner());
-  else if (state.currentView === 'settings') app.appendChild(renderSettings());
 }
 
 const render = renderApp;
