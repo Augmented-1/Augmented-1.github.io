@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moving-boxes-v2';
+const CACHE_NAME = 'moving-boxes-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -8,9 +8,9 @@ const CORE_ASSETS = [
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
-  'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
-  'https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js',
-  'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'
+  './vendor/qrcode.min.js',
+  './vendor/pako.min.js',
+  './vendor/jsqr.min.js'
 ];
 
 self.addEventListener('install', event => {
@@ -45,7 +45,7 @@ self.addEventListener('fetch', event => {
         return cached;
       }
       return fetch(req).then(fresh => {
-        if (fresh && fresh.status === 200 && (req.url.startsWith(self.location.origin) || req.url.includes('cdn.jsdelivr.net'))) {
+        if (fresh && fresh.status === 200 && req.url.startsWith(self.location.origin)) {
           const copy = fresh.clone();
           caches.open(CACHE_NAME).then(c => c.put(req, copy));
         }

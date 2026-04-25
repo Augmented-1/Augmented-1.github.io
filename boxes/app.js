@@ -564,6 +564,18 @@ function renderQR(box) {
   const wrap = el('div', { class: 'qr-screen' });
   wrap.appendChild(renderBackButton(() => nav('detail', { viewingBox: box })));
   wrap.appendChild(el('h1', { class: 'print-hide', style: { fontSize: '22px', fontWeight: 600, marginBottom: '4px' } }, 'QR label ready'));
+
+  if (typeof QRCode === 'undefined' || typeof pako === 'undefined') {
+    wrap.appendChild(el('div', { class: 'warning-banner' },
+      el('span', {}, '⚠️'),
+      el('div', {},
+        el('strong', {}, 'QR library not loaded. '),
+        'Try fully closing and reopening the app, or pull down to refresh in Safari.'
+      )
+    ));
+    return wrap;
+  }
+
   wrap.appendChild(el('p', { class: 'muted print-hide', style: { marginBottom: '20px' } }, 'Print this label and tape it to your box. Anyone can scan it with their camera to see the contents.'));
 
   const url = buildViewerURL(box);
