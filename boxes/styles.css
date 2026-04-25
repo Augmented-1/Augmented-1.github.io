@@ -155,12 +155,39 @@ input, textarea, select { font: inherit; color: inherit; }
 
 /* Print styles */
 @media print {
-  @page { margin: 16mm; }
-  body { background: white; }
+  @page { margin: 12mm; size: auto; }
+  html, body { background: white !important; margin: 0 !important; padding: 0 !important; height: auto !important; }
+  body { padding-top: 0 !important; padding-bottom: 0 !important; }
+  #app { padding: 0 !important; max-width: none !important; margin: 0 !important; }
   #app > *:not(.qr-screen) { display: none !important; }
-  .topbar, .sticky-actions, .print-hide { display: none !important; }
-  .qr-card { border: 2px solid black; page-break-inside: avoid; margin: 0 auto; }
+  .topbar, .sticky-actions, .print-hide, .back-btn { display: none !important; }
   .qr-screen > *:not(.qr-card) { display: none !important; }
+  .qr-screen { padding: 0 !important; margin: 0 !important; }
+
+  /* The label itself — sized to fit on a standard page with room to cut and tape */
+  .qr-card {
+    border: 2px solid black !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 0 auto !important;
+    width: 90mm !important;          /* ~3.5in label width */
+    max-width: 90mm !important;
+    padding: 6mm !important;
+    box-shadow: none !important;
+  }
+  .qr-card .emoji { font-size: 30pt !important; margin-bottom: 2pt !important; }
+  .qr-card h3 { font-size: 16pt !important; margin-bottom: 1pt !important; }
+  .qr-card .room { font-size: 10pt !important; margin-bottom: 2pt !important; }
+  .qr-card .pill { font-size: 8pt !important; margin-bottom: 4pt !important; padding: 1pt 6pt !important; }
+  .qr-card .items-preview { font-size: 8pt !important; margin-bottom: 4pt !important; padding-left: 14pt !important; }
+  .qr-card canvas {
+    width: 60mm !important;          /* QR fits comfortably in the label */
+    height: 60mm !important;
+    max-width: 100% !important;
+    margin: 2mm auto !important;
+    display: block !important;
+  }
+  .qr-card .hint { font-size: 7pt !important; margin-top: 2pt !important; }
 }
 
 /* Viewer mode (public read-only) */

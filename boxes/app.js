@@ -65,10 +65,12 @@ const EMOJIS = ['📦','🍳','📚','👕','🛋️','💻','🎮','🪴','🧸
 const PRIORITIES = ['Open first', 'Normal', 'Last to unpack'];
 
 function encodeBox(box) {
+  // Photo is intentionally omitted from the QR payload — it would make the URL too large
+  // for reliable QR encoding. The photo stays in the user's local app for their own reference.
   const payload = {
     l: box.label, e: box.emoji, r: box.room || '',
     p: box.priority, n: box.notes || '',
-    i: box.items, ph: box.photo || null, c: box.created
+    i: box.items, c: box.created
   };
   const json = JSON.stringify(payload);
   const compressed = pako.deflate(new TextEncoder().encode(json));
@@ -579,16 +581,6 @@ function renderQR(box) {
   wrap.appendChild(el('p', { class: 'muted print-hide', style: { marginBottom: '20px' } }, 'Print this label and tape it to your box. Anyone can scan it with their camera to see the contents.'));
 
   const url = buildViewerURL(box);
-  const urlSize = url.length;
-  if (urlSize > 2800) {
-    wrap.appendChild(el('div', { class: 'warning-banner print-hide' },
-      el('span', {}, '⚠️'),
-      el('div', {},
-        el('strong', {}, 'Dense QR warning: '),
-        'This box has a large photo or many items. The QR code may be hard to scan. Consider shrinking the photo or removing it.'
-      )
-    ));
-  }
 
   const card = el('div', { class: 'qr-card' });
   card.appendChild(el('div', { class: 'emoji' }, box.emoji));
@@ -609,17 +601,17 @@ function renderQR(box) {
 
   wrap.appendChild(card);
 
-  const errorCorrection = urlSize > 1500 ? 'L' : (urlSize > 800 ? 'M' : 'Q');
+  // With photos out of the QR payload, URLs are small enough for the highest error correction.
   QRCode.toCanvas(qrCanvas, url, {
     width: 400,
     margin: 1,
-    errorCorrectionLevel: errorCorrection,
+    errorCorrectionLevel: 'H',
     color: { dark: '#000000', light: '#ffffff' }
   }, err => {
     if (err) {
       console.error(err);
       card.replaceChild(
-        el('div', { style: { padding: '40px 20px', color: 'red', fontSize: '14px' } }, 'QR too large — try removing the photo or some items.'),
+        el('div', { style: { padding: '40px 20px', color: 'red', fontSize: '14px' } }, 'QR generation failed: ' + err.message),
         qrCanvas
       );
     }

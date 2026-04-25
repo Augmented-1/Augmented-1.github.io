@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moving-boxes-v3';
+const CACHE_NAME = 'moving-boxes-v4';
 const CORE_ASSETS = [
   './',
   './index.html',
